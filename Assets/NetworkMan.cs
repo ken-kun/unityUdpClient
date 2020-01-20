@@ -123,7 +123,7 @@ public class NetworkMan : MonoBehaviour
             cube.transform.position = new Vector3(0, 0.5f, 0);
 
         }
-        GotNewPlayer = false;
+        //GotNewPlayer = false;
 
 
 
@@ -141,13 +141,17 @@ public class NetworkMan : MonoBehaviour
             cubeRenderer.material.color = new Color(lastestGameState.players[0].color.R, lastestGameState.players[0].color.G, lastestGameState.players[0].color.B);
 
         }
-        currentGameState = false;
+        //currentGameState = false;
 
     }
 
     void DestroyPlayers()
     {
-
+        if(GotNewPlayer = false)
+        {
+            Destroy(cube);
+            currentGameState = false;
+        }
     }
 
     void HeartBeat()
