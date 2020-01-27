@@ -14,7 +14,7 @@ public class NetworkMan : MonoBehaviour
     {
         udp = new UdpClient();
 
-        udp.Connect("ec2-54-147-162-251.compute-1.amazonaws.com", 12345);
+        udp.Connect("ec2-54-152-99-54.compute-1.amazonaws.com", 12345);
 
         Byte[] sendBytes = Encoding.ASCII.GetBytes("connect");
 
@@ -60,6 +60,7 @@ public class NetworkMan : MonoBehaviour
     [Serializable]
     public class NewPlayer
     {
+        public Player player;
 
     }
 
@@ -70,6 +71,7 @@ public class NetworkMan : MonoBehaviour
     }
 
     public Message latestMessage;
+    public NewPlayer latestPlayer;
     public GameState lastestGameState;
     void OnReceived(IAsyncResult result)
     {
@@ -93,6 +95,8 @@ public class NetworkMan : MonoBehaviour
             {
                 case commands.NEW_CLIENT:
                     GotNewPlayer = true;
+                    latestPlayer = JsonUtility.FromJson<NewPlayer>(returnData);
+                    Debug.Log("This player connected: " + latestPlayer.player.id);                
                     break;
                 case commands.UPDATE:
                     currentGameState = true;
@@ -114,13 +118,20 @@ public class NetworkMan : MonoBehaviour
     GameObject cube;
     bool GotNewPlayer;
     bool currentGameState;
+    Dictionary<string, GameObject> players = new Dictionary<string, GameObject>();
+    
     void SpawnPlayers()
     {
         if (GotNewPlayer)
         {
-
+            
             cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.transform.position = new Vector3(0, 0.5f, 0);
+            players.Add(latestPlayer.player.id, cube);
+            
+
+
+            
 
         }
         //GotNewPlayer = false;
@@ -137,11 +148,17 @@ public class NetworkMan : MonoBehaviour
     {
         if (currentGameState)
         {
-            var cubeRenderer = cube.GetComponent<Renderer>();
-            cubeRenderer.material.color = new Color(lastestGameState.players[0].color.R, lastestGameState.players[0].color.G, lastestGameState.players[0].color.B);
-
+            for (int i = 0; i < lastestGameState.players.Length; i++)
+            {
+                var cubeRenderer = players[lastestGameState.players[i].id].GetComponent<Renderer>();
+                cubeRenderer.material.color = new Color(lastestGameState.players[i].color.R, lastestGameState.players[i].color.G, lastestGameState.players[i].color.B);
+            }
+            //foreach (string key in players.Keys) {
+            //    var cubeRenderer = players[key].GetComponent<Renderer>();
+            //    cubeRenderer.material.color = new Color(lastestGameState.players[key].color.R, lastestGameState.players[key].color.G, lastestGameState.players[key].color.B);
+            //}
         }
-        //currentGameState = false;
+        currentGameState = false;
 
     }
 
